@@ -1,6 +1,6 @@
-!function( window, undefined ) {
+!function( window, Utils, undefined ) {
 	//Imports
-	var $ = Utils.Mix();
+	var $ = Utils.Mix;
 
 	$.ready( "dom", main );
 
@@ -10,13 +10,7 @@
 			width: window.innerWidth * .7,
 			height: window.innerHeight * .7,
 
-			drop: dropImage,
-
-			dragOver: function( event ) {
-				event.stopPropagation();
-				event.preventDefault();
-				event.dataTransfer.dropEffect = 'copy';
-			}
+			drop: dropImage
 		});
 	}
 
@@ -60,4 +54,4 @@
 		}
 		document.getElementById( 'log' ).innerHTML = '<ul>' + output.join('') + '</ul>';
 	}
-}( window );
+}( window, Utils );

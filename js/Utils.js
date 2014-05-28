@@ -111,35 +111,32 @@
 		Array.prototype.forEach = function( fun ) {
 			"use strict";
 
-			if (this === void 0 || this === null)
+			if( this === void 0 || this === null )
 				throw new TypeError();
 
-			var t = Object( this );
-			var len = t.length >>> 0;
 			if( typeof fun !== "function" )
 				throw new TypeError();
+			var t = Object( this );
+			var len = t.length >>> 0;
 
-			var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
-			for (var i = 0; i < len; i++) {
-		  		if (i in t)
-					fun.call(thisArg, t[i], i, t);
+			var thisArg = arguments.length >= 2 ? arguments[ 1 ] : void 0;
+			for( var i = 0; i < len; i++ ) {
+		  		if( i in t )
+					fun.call( thisArg, t[ i ], i, t );
 			}
 		};
 	}
+
+	var mix = ObjectUtils.EMPTY;
+	ObjectUtils.extend( mix, StringUtils );
+	ObjectUtils.extend( mix, ObjectUtils );
+	ObjectUtils.extend( mix, DOMUtils );
 
 	window.Utils = {
 		StringUtils: StringUtils,
 		ObjectUtils: ObjectUtils,
 		DOMUtils: DOMUtils,
 
-		Mix: function() {
-			var mix = ObjectUtils.EMPTY;
-
-			ObjectUtils.extend( mix, StringUtils );
-			ObjectUtils.extend( mix, ObjectUtils );
-			ObjectUtils.extend( mix, DOMUtils );
-
-			return mix;
-		}
+		Mix: mix
 	};
 }( window );

@@ -3,7 +3,7 @@
 		throw "Exception: No se encontro API Files";
 	}
 
-	var $ = Utils.Mix(); //Encapsula la libreria de utilidades Utils.js
+	var $ = Utils.Mix; //Encapsula la libreria de utilidades Utils.js
 
 	window.ConfigureAtlax = (function() {
 		var contructor = function( config ) {
@@ -30,12 +30,10 @@
 				getMousePos: getMousePos
 			});
 
-			if( config.dragOver )
-				canvasAtlax.addEventListener( 'dragover', function( event ) {
-					event.stopPropagation();
-					event.preventDefault();
-					config.dragOver.apply( contructor, arguments );
-				}, false );
+			canvasAtlax.addEventListener( 'dragover', function( event ) {
+				event.stopPropagation();
+				event.preventDefault();
+			}, false );
 
 			if( config.drop )
 				canvasAtlax.addEventListener( 'drop', function( event ) {
