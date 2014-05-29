@@ -5,7 +5,7 @@
 
 	var $ = Utils.Mix; //Encapsula la libreria de utilidades Utils.js
 
-	window.ConfigureAtlax = (function() {
+	window.Atlax = (function() {
 		var contructor = function( config ) {
 			var canvasAtlax = $.get( config.id ),
 				ctxAtlax = canvasAtlax.getContext( "2d" );
@@ -24,10 +24,29 @@
 				};
 			}
 
+			function addImageToAtlax( fileImage, x, y, width, height ) {
+				var reader = new FileReader();
+
+				reader.onload = (function( fileImage ) {
+					return function( e ) {
+						var imageUpload = new Image();
+						
+						imageUpload.onload = function() {
+							ctxAtlax.drawImage( this, x, y, width || this.width, height || this.height );
+						};
+						imageUpload.src = e.target.result;
+					};
+				})( fileImage );
+				reader.readAsDataURL( fileImage );
+
+				return reader;
+			}
+
 			$.extend( contructor, {
 				canvasAtlax: canvasAtlax,
 				ctxAtlax: ctxAtlax,
-				getMousePos: getMousePos
+				getMousePos: getMousePos,
+				addImageToAtlax: addImageToAtlax
 			});
 
 			canvasAtlax.addEventListener( 'dragover', function( event ) {
