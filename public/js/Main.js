@@ -15,11 +15,11 @@
 	}
 
 	function dropImage( event ) {
-		var contextAtlax = this;
+		var thisAtlax = this;
 		var files = event.dataTransfer.files; // FileList object.
 
-		var eventX = contextAtlax.getMousePos( event ).x,
-			eventY = contextAtlax.getMousePos( event ).y;
+		var eventX = thisAtlax.getMousePos( event ).x,
+			eventY = thisAtlax.getMousePos( event ).y;
 
 		var output = [];
 		for (var i = 0, f; f = files[i]; i++) {
@@ -27,7 +27,7 @@
 				continue;
 			}
 
-			var reader = contextAtlax.addImageToAtlax( f, eventX, eventY );
+			var reader = thisAtlax.addImageToAtlax( f, eventX, eventY );
 			
 
 			output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',

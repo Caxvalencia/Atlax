@@ -101,6 +101,33 @@
 		},
 		getFirst: function( element ) {
 			return document.querySelector( element );
+		},
+		createCanvasBack: function( width, height, funcBack ) {
+			var canvasDum = document.createElement( "canvas" );
+			canvasDum.width = width;
+			canvasDum.height = height;
+			var contextDum = canvasDum.getContext( "2d" );
+
+			var scoper = {
+				canvas: canvasDum,
+				context: contextDum
+			};
+
+			if( funcBack ) {
+				funcBack.apply( scoper, arguments );
+			}
+
+			return scoper;
+		},
+		createImage: function( url, funcBack ) {
+			var img = new Image();
+
+			if( funcBack )
+				img.onload = funcBack;
+				
+			img.src = url;
+
+			return img;
 		}
 	};
 
