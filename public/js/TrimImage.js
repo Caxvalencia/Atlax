@@ -56,6 +56,8 @@ window.ImageUtils = (function( window, $, undefined ) {
 		
 		context.putImageData( imageData, 0, 0 );
 		var image = new Image();
+		image.width = imgW;
+		image.height = imgH;
 		image.src = canvas.toDataURL( 'image/png' );
 
 		return image;
@@ -73,9 +75,9 @@ window.ImageUtils = (function( window, $, undefined ) {
 	 */
 	function _trim( imageData ) {
 		var trimmedImage = _trimTop( imageData );
-		trimmedImage = _trimBottom( trimmedImage );
-		trimmedImage = _trimRight( trimmedImage );
-		trimmedImage = _trimLeft( trimmedImage );
+		// trimmedImage = _trimBottom( trimmedImage );
+		// trimmedImage = _trimRight( trimmedImage );
+		// trimmedImage = _trimLeft( trimmedImage );
 
 		return trimmedImage;
 	}
@@ -102,16 +104,17 @@ window.ImageUtils = (function( window, $, undefined ) {
 	function _trimTop( imageData ) {
 		var col0 = 0,
 			row = 0,
-			len_width = imageData.width * 4,
-			len_height = imageData.height,
-			top = cutImageData( imageData, row, col0, row, len_width );
+			len_col = imageData.width * 4,
+			len_row = imageData.height,
+			top = cutImageData( imageData, row, col0, row, len_col );
 
-		while( isEmptyRow( top ) ) {
+		while( isEmptyRow( top ) && row <= 50 ) {
+			top = null;
 			row++;
-			top = cutImageData( imageData, row, col0, row, len_width );
+			top = cutImageData( imageData, row, col0, row, len_col );
 		}
 
-		return cutImageData( imageData, (row + 1), col0, len_height, len_width );
+		return cutImageData( imageData, row, col0, len_row, len_col );
 	}
 
 	function cutImageData( imageData, rowIni, colIni, rowFin, colFin ) {
@@ -122,7 +125,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 		colFin = colFin == 0 ? 1 : colFin;
 
 		var context = $.createCanvasBack( colFin / 4, rowFin ).context;
-		var copyImageData = context.createImageData( colFin / 4, rowFin );
+		var copyImageData = context.createImageData( colFin / 4, (rowFin-rowIni) == 0 ? 1 : rowFin-rowIni );
 
 		for( row = rowIni; row < rowFin; row++ ) {
 			rowCurrent = row * colFin;
@@ -135,18 +138,27 @@ window.ImageUtils = (function( window, $, undefined ) {
 			}
 		}
 
+console.log( "->>" + copyImageData.width, copyImageData.height, rowFin-rowIni );
 		return copyImageData;
 	}
 
-	function isEmptyRow2( imageData ) {
-		var isEmpty = true;
+	function isEmptyRow( imageData ) {
+		var isEmpty = true,
+			row, col,
+			pixels = imageData.data,
+			len_row = imageData.height,
+			len_col = imageData.width * 4;
 
-		readImageData( imageData, function() {
-			console.log( this.alpha )
-			if( this.alpha != 0 ) {
-				isEmpty = true;
+		for( row = 0; row < len_row; row++ ) {
+			rowCurrent = row * len_col;
+
+			for( col = 0; col < len_col; col += 4 ) {
+				if( pixels[ rowCurrent + col+3 ] != 0 ) {
+					isEmpty = false;
+					break;
+				}
 			}
-		});
+		}
 
 		return isEmpty;
 	}
@@ -170,13 +182,15 @@ window.ImageUtils = (function( window, $, undefined ) {
 			row, col, rowCurrent,
 			red, green, blue, alpha;
 
-		var imageDataWidth = imageData.width * 4,
-			imageDataHeight = imageData.height;
+		var len_col = imageData.width * 4,
+			len_row = imageData.height;
 
-		for( row = 0; row < imageDataHeight; row++ ) {
-			rowCurrent = row * imageDataWidth;
+		var isBreak;
 
-			for( col = 0; col < imageDataWidth; col += 4 ) {
+		for( row = 0; row < len_row; row++ ) {
+			rowCurrent = row * len_col;
+
+			for( col = 0; col < len_col; col += 4 ) {
 				pixel = {
 					red:   getAndSetForPixel([ rowCurrent + col ]),
 					green: getAndSetForPixel([ rowCurrent + col+1 ]),
@@ -184,7 +198,14 @@ window.ImageUtils = (function( window, $, undefined ) {
 					alpha: getAndSetForPixel([ rowCurrent + col+3 ])
 				};
 				
-				funcBack.apply( pixel, [row, col] );
+				isBreak = funcBack.apply( pixel, [row, col] );
+
+				if ( isBreak == "break" ) {
+					break;
+				}
+			}
+			if ( isBreak == "break" ) {
+				break;
 			}
 		}
 
@@ -216,7 +237,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 		imagen2.onload = function() {
 			var imageData2 = getImageData( imagen2 );
-			imagen2 = getImage( cutImageData( imageData2, 0, 0, imagen2.height, imageData2.width * 4 ) );
+			// imagen2 = getImage( cutImageData( imageData2, 0, 0, imagen2.height, imageData2.width * 4 ) );
 
 			document.body.appendChild( imagen );
 			document.body.appendChild( imagen2 );
