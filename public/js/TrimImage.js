@@ -65,6 +65,12 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 	/**
 	 * METODOS PRIVADOS
+	 *
+	 * _trim()
+	 * _trimTop()
+	 * _trimBottom()
+	 * _trimLeft()
+	 * _trimRight()
 	 */
 
 	/**
@@ -102,18 +108,18 @@ window.ImageUtils = (function( window, $, undefined ) {
 	 * @return {imageData object}
 	 */
 	function _trimTop( imageData ) {
-		var col0 = 0,
-			row = 0,
+		var row = 0,
 			len_col = imageData.width * 4,
-			len_row = imageData.height,
-			top = cutImageData( imageData, row, col0, row, len_col );
+			len_row = imageData.height;
 
-		while( isEmptyRow( top ) && row <= 30 ) {
-			row++;
-			top = cutImageData( imageData, row, col0, row, len_col );
-		}
+		readImageData( imageData, function( r, c ) {
+			if( this.alpha() != 0 ) {
+				row = r;
+				return "break";
+			}
+		});
 
-		return cutImageData( imageData, row, col0, len_row, len_col );
+		return cutImageData( imageData, row, 0, len_row, len_col );
 	}
 
 	function cutImageData( imageData, rowIni, colIni, rowFin, colFin ) {
@@ -123,7 +129,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 		rowFin = rowFin == 0 ? 1 : rowFin;
 		colFin = colFin == 0 ? 1 : colFin;
 
-		var context = $.createCanvasBack( colFin / 4, rowFin ).context;
+		var context = $.createCanvasBack( colFin / 4, (rowFin-rowIni) == 0 ? 1 : rowFin-rowIni ).context;
 		var copyImageData = context.createImageData( colFin / 4, (rowFin-rowIni) == 0 ? 1 : rowFin-rowIni );
 
 		var countCopy = 0
@@ -141,28 +147,6 @@ window.ImageUtils = (function( window, $, undefined ) {
 		return copyImageData;
 	}
 
-	function isEmptyRow( imageData ) {
-		var isEmpty = true,
-			row, col,
-			pixels = imageData.data,
-			len_row = imageData.height,
-			len_col = imageData.width * 4;
-
-		for( row = 0; row < len_row; row++ ) {
-			rowCurrent = row * len_col;
-
-			for( col = 0; col < len_col; col += 4 ) {
-				if( pixels[ rowCurrent + col + 3 ] != 0 ) {
-					isEmpty = false;
-					console.log( "cax" )
-					break;
-				}
-			}
-		}
-
-		return isEmpty;
-	}
-
 	/**
 	 * @public
 	 *
@@ -178,27 +162,24 @@ window.ImageUtils = (function( window, $, undefined ) {
 	function readImageData( imageData, funcBack ) {
 		var len_imgData = imageData.data.length,
 			pixels = imageData.data,
-			pixel,
 			row, col, rowCurrent,
 			red, green, blue, alpha;
 
 		var len_col = imageData.width * 4,
 			len_row = imageData.height;
 
-		var isBreak;
+		var isBreak = false;
 
 		for( row = 0; row < len_row; row++ ) {
 			rowCurrent = row * len_col;
 
 			for( col = 0; col < len_col; col += 4 ) {
-				pixel = {
+				isBreak = funcBack.apply({
 					red:   getAndSetForPixel([ rowCurrent + col ]),
 					green: getAndSetForPixel([ rowCurrent + col+1 ]),
 					blue:  getAndSetForPixel([ rowCurrent + col+2 ]),
 					alpha: getAndSetForPixel([ rowCurrent + col+3 ])
-				};
-				
-				isBreak = funcBack.apply( pixel, [row, col] );
+				}, [row, col] );
 
 				if ( isBreak == "break" ) {
 					break;
@@ -211,9 +192,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 		function getAndSetForPixel( pos ) {
 			return function( val ) {
-				if( !val ) {
-					return pixels[ pos ];
-				}
+				if( !val ) return pixels[ pos ];
 
 				pixels[ pos ] = val;
 			};
@@ -235,6 +214,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 				this.green( 0 );
 				this.blue( 0 );
 				this.alpha( 255 );
+				if( row > 20 ) return "break"
 			}
 		}) );
 
