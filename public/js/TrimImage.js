@@ -108,8 +108,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 			len_row = imageData.height,
 			top = cutImageData( imageData, row, col0, row, len_col );
 
-		while( isEmptyRow( top ) && row <= 50 ) {
-			top = null;
+		while( isEmptyRow( top ) && row <= 30 ) {
 			row++;
 			top = cutImageData( imageData, row, col0, row, len_col );
 		}
@@ -127,18 +126,18 @@ window.ImageUtils = (function( window, $, undefined ) {
 		var context = $.createCanvasBack( colFin / 4, rowFin ).context;
 		var copyImageData = context.createImageData( colFin / 4, (rowFin-rowIni) == 0 ? 1 : rowFin-rowIni );
 
+		var countCopy = 0
 		for( row = rowIni; row < rowFin; row++ ) {
 			rowCurrent = row * colFin;
 
-			for( col = colIni; col < colFin; col += 4 ) {
-				copyImageData.data[ rowCurrent + col ]   = pixels[ rowCurrent + col ];
-				copyImageData.data[ rowCurrent + col+1 ] = pixels[ rowCurrent + col+1 ];
-				copyImageData.data[ rowCurrent + col+2 ] = pixels[ rowCurrent + col+2 ];
-				copyImageData.data[ rowCurrent + col+3 ] = pixels[ rowCurrent + col+3 ];
+			for( col = colIni; col < colFin; col += 4, countCopy += 4 ) {
+				copyImageData.data[ countCopy ]   = pixels[ rowCurrent + col ];
+				copyImageData.data[ countCopy+1 ] = pixels[ rowCurrent + col+1 ];
+				copyImageData.data[ countCopy+2 ] = pixels[ rowCurrent + col+2 ];
+				copyImageData.data[ countCopy+3 ] = pixels[ rowCurrent + col+3 ];
 			}
 		}
 
-console.log( "->>" + copyImageData.width, copyImageData.height, rowFin-rowIni );
 		return copyImageData;
 	}
 
@@ -153,8 +152,9 @@ console.log( "->>" + copyImageData.width, copyImageData.height, rowFin-rowIni );
 			rowCurrent = row * len_col;
 
 			for( col = 0; col < len_col; col += 4 ) {
-				if( pixels[ rowCurrent + col+3 ] != 0 ) {
+				if( pixels[ rowCurrent + col + 3 ] != 0 ) {
 					isEmpty = false;
+					console.log( "cax" )
 					break;
 				}
 			}
@@ -230,14 +230,17 @@ console.log( "->>" + copyImageData.width, copyImageData.height, rowFin-rowIni );
 	imagen.onload = function() {
 		var cax = getImageData( imagen );
 		var imagen2 = getImage( readImageData( cax, function( row, col ) {
-			this.red( 255 - this.red() );
-			this.green( 255 - this.green() );
-			this.blue( 255 - this.blue() );
+			if( this.alpha() == 0 ) {
+				this.red( 255 );
+				this.green( 0 );
+				this.blue( 0 );
+				this.alpha( 255 );
+			}
 		}) );
 
 		imagen2.onload = function() {
 			var imageData2 = getImageData( imagen2 );
-			// imagen2 = getImage( cutImageData( imageData2, 0, 0, imagen2.height, imageData2.width * 4 ) );
+			imagen2 = getImage( cutImageData( imageData2, 10, 0, imagen2.height/2, imageData2.width * 4 ) );
 
 			document.body.appendChild( imagen );
 			document.body.appendChild( imagen2 );
