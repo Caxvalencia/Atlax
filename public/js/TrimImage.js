@@ -1,6 +1,6 @@
 window.ImageUtils = (function( window, $, undefined ) {
 	/**
-	 * @description - Crea un objeto para manipula la imagen pasada por el parametro
+	 * @description - Crea un objeto para manipular la imagen pasada por el parametro
 	 * @constructor
 	 *
 	 * @param {image object} image - Imagen a procesar
@@ -9,7 +9,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 		this.image = configureImage( image );
 		this.trim = trim;
 		this.trimTop = trimTop;
-		// this.trimBottom = trimBottom;
+		this.trimBottom = trimBottom;
 		// this.trimRight = trimRight;
 		// this.trimLeft = trimLeft;
 
@@ -25,8 +25,10 @@ window.ImageUtils = (function( window, $, undefined ) {
 	}
 
 	/**
-	 * @param {image Object} image
-	 * @return {imageData}
+	 * @description - Devuelve un objeto imageData a partir de una imagen dada
+	 *
+	 * @param {image object} image - Objeto imagen
+	 * @return {imageData object}
 	 */
 	function getImageData( image ) {
 		var imgW = image.width,
@@ -39,13 +41,14 @@ window.ImageUtils = (function( window, $, undefined ) {
 	}
 
 	/**
-	 * @description - Convierte un image data a image object
-	 * @method
+	 * @description - Convierte un imageData object a un image object
 	 *
 	 * @param {imageData} imageData - Objeto con matriz de datos de la imagen
 	 * @return {image object}
 	 */
-	function getImage( imageData ) {
+	function getImage( imageData, funcBack ) {
+		validateImageData( imageData );
+		
 		var imgW = imageData.width,
 			imgH = imageData.height;
 
@@ -58,19 +61,59 @@ window.ImageUtils = (function( window, $, undefined ) {
 		var image = new Image();
 		image.width = imgW;
 		image.height = imgH;
+
+		if( funcBack )
+			image.onload = funcBack;
+
 		image.src = canvas.toDataURL( 'image/png' );
 
 		return image;
 	}
 
 	/**
+	 * METODOS PUBLICOS
+	 *
+	 * trim()
+	 * trimTop()
+	 * trimBottom()
+	 * trimLeft()
+	 * trimRight()
+	 *
+	 */
+
+	/**
+	 * @description - Elimina pixeles innecesarios para los bordes de la imagen
+	 * @return {image object}
+	 */
+	function trim() {
+		return getImage( _trim( getImageData( this.image ) ) );
+	}
+
+	/**
+	 * @description - Elimina pixeles innecesarios para el borde superior de la imagen
+	 * @return {image object}
+	 */
+	function trimTop() {
+		return getImage( _trimTop( getImageData( this.image ) ) );
+	}
+
+	/**
+	 * @description - Elimina pixeles innecesarios para el borde inferior de la imagen
+	 * @return {image object}
+	 */
+	function trimBottom() {
+		return getImage( _trimBottom( getImageData( this.image ) ) );
+	}
+
+	/**
 	 * METODOS PRIVADOS
 	 *
-	 * _trim()
-	 * _trimTop()
-	 * _trimBottom()
-	 * _trimLeft()
-	 * _trimRight()
+	 * _trim( imageData )
+	 * _trimTop( imageData )
+	 * _trimBottom( imageData )
+	 * _trimLeft( imageData )
+	 * _trimRight( imageData )
+	 *
 	 */
 
 	/**
@@ -80,8 +123,10 @@ window.ImageUtils = (function( window, $, undefined ) {
 	 * @return {imageData object}
 	 */
 	function _trim( imageData ) {
+		validateImageData( imageData );
+
 		var trimmedImage = _trimTop( imageData );
-		// trimmedImage = _trimBottom( trimmedImage );
+			trimmedImage = _trimBottom( trimmedImage );
 		// trimmedImage = _trimRight( trimmedImage );
 		// trimmedImage = _trimLeft( trimmedImage );
 
@@ -89,32 +134,42 @@ window.ImageUtils = (function( window, $, undefined ) {
 	}
 
 	/**
-	 * @public
-	 * 
-	 * @description - Elimina pixeles innecesarios para la imagen del contexto
-	 * @method
-	 *
-	 * @return {image object}
-	 */
-	function trim() {
-		return getImage( _trim( getImageData( this.image ) ) );
-	}
-
-	/**
 	 * @description - Devuelve un array de datos de la imagen 
-	 * @method
 	 *
 	 * @param {imageData} imageData - Matriz de datos de la imagen
 	 * @return {imageData object}
 	 */
 	function _trimTop( imageData ) {
+		validateImageData( imageData );
+
 		var row = 0,
 			len_col = imageData.width * 4,
 			len_row = imageData.height;
 
 		readImageData( imageData, function( r, c ) {
 			if( this.alpha() != 0 ) {
-				row = r;
+				row = r-1;
+				return "break";
+			}
+		});
+
+		return cutImageData( imageData, row, 0, len_row, len_col );
+	}
+
+	/**
+	 * @description - Devuelve un array de datos de la imagen 
+	 *
+	 * @param {imageData} imageData - Matriz de datos de la imagen
+	 * @return {imageData object}
+	 */
+	function _trimBottom( imageData ) {
+		var row = 0,
+			len_col = imageData.width * 4,
+			len_row = imageData.height;
+
+		readImageData( imageData, function( r, c ) {
+			if( this.alpha() != 0 ) {
+				row = r-1;
 				return "break";
 			}
 		});
@@ -123,14 +178,18 @@ window.ImageUtils = (function( window, $, undefined ) {
 	}
 
 	function cutImageData( imageData, rowIni, colIni, rowFin, colFin ) {
-		var pixels = imageData.data;
-		var row, col, rowCurrent;
+		validateImageData( imageData );
+
+		var pixels = imageData.data,
+			row, col, rowCurrent;
 
 		rowFin = rowFin == 0 ? 1 : rowFin;
 		colFin = colFin == 0 ? 1 : colFin;
 
-		var context = $.createCanvasBack( colFin / 4, (rowFin-rowIni) == 0 ? 1 : rowFin-rowIni ).context;
-		var copyImageData = context.createImageData( colFin / 4, (rowFin-rowIni) == 0 ? 1 : rowFin-rowIni );
+		var copyHeight = rowFin == rowIni ? 1 : rowFin-rowIni;
+
+		var context = $.createCanvasBack( colFin / 4, copyHeight ).context,
+			copyImageData = context.createImageData( colFin / 4, copyHeight );
 
 		var countCopy = 0
 		for( row = rowIni; row < rowFin; row++ ) {
@@ -147,23 +206,11 @@ window.ImageUtils = (function( window, $, undefined ) {
 		return copyImageData;
 	}
 
-	/**
-	 * @public
-	 *
-	 * @description - Elimina pixeles inncesario para la parte superior de la imagen
-	 * @method
-	 *
-	 * @return {image object}
-	 */
-	function trimTop() {
-		return getImage( _trimTop( getImageData( this.image ) ) );
-	}
-
 	function readImageData( imageData, funcBack ) {
-		var len_imgData = imageData.data.length,
-			pixels = imageData.data,
-			row, col, rowCurrent,
-			red, green, blue, alpha;
+		validateImageData( imageData );
+
+		var pixels = imageData.data,
+			row, col, rowCurrent = -1;
 
 		var len_col = imageData.width * 4,
 			len_row = imageData.height;
@@ -199,6 +246,11 @@ window.ImageUtils = (function( window, $, undefined ) {
 		}
 
 		return imageData;
+	}
+
+	function validateImageData( imageData ) {
+		if( $.is( imageData ) !== "imagedata" )
+			throw "ImageData Exception: No es compatible el tipo de dato";
 	}
 
 	/**
