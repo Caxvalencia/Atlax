@@ -4,9 +4,10 @@ window.ImageUtils = (function( window, $, undefined ) {
 	 * @constructor
 	 *
 	 * @param {image object} image - Imagen a procesar
+	 * @param {function} funcLoadBack - Función back para el load de la imagen
 	 */
-	var ImageUtils = function( image ) {
-		this.image = configureImage( image );
+	var ImageUtils = function( image, funcLoadBack ) {
+		this.image = configureImage( image, funcLoadBack );
 		this.trim = trim;
 		this.trimTop = trimTop;
 		this.trimBottom = trimBottom;
@@ -16,10 +17,13 @@ window.ImageUtils = (function( window, $, undefined ) {
 		return this;
 	}
 
-	function configureImage( image ) {
+	function configureImage( image, funcBack ) {
 		if( $.isString( image ) ) {
-			return $.createImage( image );
+			return $.createImage( image, funcBack );
 		}
+
+		if( funcBack )
+			image.onload = funcBack;
 
 		return image;
 	}
