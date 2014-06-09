@@ -150,7 +150,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 			len_col = imageData.width * 4,
 			len_row = imageData.height;
 
-		readImageData( imageData, function( r, c ) {
+		readImageData( "top", imageData, function( r, c ) {
 			if( this.alpha() != 0 ) {
 				row = r-1;
 				return "break";
@@ -171,7 +171,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 			len_col = imageData.width * 4,
 			len_row = imageData.height;
 
-		readImageData( imageData, function( r, c ) {
+		readImageData( "bottom", imageData, function( r, c ) {
 			if( this.alpha() != 0 ) {
 				row = r-1;
 				return "break";
@@ -210,7 +210,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 		return copyImageData;
 	}
 
-	function readImageData( imageData, funcBack ) {
+	function readImageData( typeReader, imageData, funcBack ) {
 		validateImageData( imageData );
 
 		var pixels = imageData.data,
@@ -219,12 +219,33 @@ window.ImageUtils = (function( window, $, undefined ) {
 		var len_col = imageData.width * 4,
 			len_row = imageData.height;
 
-		var isBreak = false;
+		if( typeReader.toUpperCase() === "TOP" ) {
+			var rowIni = 0,
+				rowFin = len_row,
+				colIni = 0,
+				colFin = len_col,
 
-		for( row = 0; row < len_row; row++ ) {
+				interator = {
+					row: 1,
+					col: 4
+				};
+		} else if( typeReader.toUpperCase() === "BOTTOM" ) {
+			var rowIni = len_row,
+				rowFin = 0,
+				colIni = len_col,
+				colFin = 0,
+
+				interator = {
+					row: -1,
+					col: -4
+				};
+		}
+
+		var isBreak = false;
+		for( row = rowIni; row < rowFin; row += interator.row ) {
 			rowCurrent = row * len_col;
 
-			for( col = 0; col < len_col; col += 4 ) {
+			for( col = colIni; col < colFin; col += interator.col ) {
 				isBreak = funcBack.apply({
 					red:   getAndSetForPixel([ rowCurrent + col ]),
 					green: getAndSetForPixel([ rowCurrent + col+1 ]),
@@ -264,7 +285,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 	var imagen = ImageUtils( "img/ico-save.png" ).image;
 	imagen.onload = function() {
 		var cax = getImageData( imagen );
-		var imagen2 = getImage( readImageData( cax, function( row, col ) {
+		var imagen2 = getImage( readImageData( "top", cax, function( row, col ) {
 			if( this.alpha() == 0 ) {
 				this.red( 255 );
 				this.green( 0 );
