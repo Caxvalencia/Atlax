@@ -172,13 +172,19 @@ window.ImageUtils = (function( window, $, undefined ) {
 			len_row = imageData.height;
 
 		readImageData( "bottom", imageData, function( r, c ) {
-			if( this.alpha() != 0 ) {
-				row = r-1;
-				return "break";
+			if( this.alpha() == 0 ) {
+				this.red( 255 );
+				this.alpha( 0 );
 			}
+
+			// if( this.alpha() != 0 ) {
+			// 	row = r+1;
+			// 	return "break";
+			// }
 		});
 
-		return cutImageData( imageData, row, 0, len_row, len_col );
+		// return cutImageData( imageData, row, 0, len_row, len_col );
+		return cutImageData( imageData, 0, 0, len_row, len_col );
 	}
 
 	function cutImageData( imageData, rowIni, colIni, rowFin, colFin ) {
@@ -219,6 +225,8 @@ window.ImageUtils = (function( window, $, undefined ) {
 		var len_col = imageData.width * 4,
 			len_row = imageData.height;
 
+		var isBreak = false;
+
 		if( typeReader.toUpperCase() === "TOP" ) {
 			var rowIni = 0,
 				rowFin = len_row,
@@ -229,36 +237,50 @@ window.ImageUtils = (function( window, $, undefined ) {
 					row: 1,
 					col: 4
 				};
-		} else if( typeReader.toUpperCase() === "BOTTOM" ) {
-			var rowIni = len_row,
-				rowFin = 0,
-				colIni = len_col,
-				colFin = 0,
 
-				interator = {
-					row: -1,
-					col: -4
-				};
-		}
+			for( row = rowIni; row < rowFin; row += interator.row ) {
+				rowCurrent = row * len_col;
 
-		var isBreak = false;
-		for( row = rowIni; row < rowFin; row += interator.row ) {
-			rowCurrent = row * len_col;
+				for( col = colIni; col < colFin; col += interator.col ) {
+					isBreak = funcBack.apply({
+						red:   getAndSetForPixel([ rowCurrent + col ]),
+						green: getAndSetForPixel([ rowCurrent + col+1 ]),
+						blue:  getAndSetForPixel([ rowCurrent + col+2 ]),
+						alpha: getAndSetForPixel([ rowCurrent + col+3 ])
+					}, [row, col] );
 
-			for( col = colIni; col < colFin; col += interator.col ) {
-				isBreak = funcBack.apply({
-					red:   getAndSetForPixel([ rowCurrent + col ]),
-					green: getAndSetForPixel([ rowCurrent + col+1 ]),
-					blue:  getAndSetForPixel([ rowCurrent + col+2 ]),
-					alpha: getAndSetForPixel([ rowCurrent + col+3 ])
-				}, [row, col] );
-
+					if ( isBreak == "break" ) {
+						break;
+					}
+				}
 				if ( isBreak == "break" ) {
 					break;
 				}
 			}
-			if ( isBreak == "break" ) {
-				break;
+		} else if( typeReader.toUpperCase() === "BOTTOM" ) {
+			var rowIni = len_row,
+				rowFin = 0,
+				colIni = len_col,
+				colFin = 0;
+
+			for( row = rowIni; row >= rowFin; row-- ) {
+				rowCurrent = row * colIni;
+
+				for( col = colIni; col >= colFin; col -= 4 ) {
+					isBreak = funcBack.apply({
+						red:   getAndSetForPixel([ rowCurrent + col-3 ]),
+						green: getAndSetForPixel([ rowCurrent + col-2 ]),
+						blue:  getAndSetForPixel([ rowCurrent + col-1 ]),
+						alpha: getAndSetForPixel([ rowCurrent + col ])
+					}, [row, col] );
+
+					if ( isBreak == "break" ) {
+						break;
+					}
+				}
+				if ( isBreak == "break" ) {
+					break;
+				}
 			}
 		}
 
