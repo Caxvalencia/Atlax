@@ -172,17 +172,20 @@ window.ImageUtils = (function( window, $, undefined ) {
 			len_row = imageData.height;
 
 		readImageData( "bottom", imageData, function( r, c ) {
-			if( this.alpha() == 0 ) {
-				this.red( 255 );
-				this.alpha( 0 );
+			this.red( 255 );
+			this.green( 0 );
+			this.blue( 0 );
+			
+			console.log( this.alpha(), r,c );
+
+			if( this.alpha() != 0 ) {
+				row = r+1;
+
+				return "break";
 			}
 
-			// if( this.alpha() != 0 ) {
-			// 	row = r+1;
-			// 	return "break";
-			// }
+			this.alpha( 255 );
 		});
-
 		// return cutImageData( imageData, row, 0, len_row, len_col );
 		return cutImageData( imageData, 0, 0, len_row, len_col );
 	}
@@ -266,12 +269,12 @@ window.ImageUtils = (function( window, $, undefined ) {
 			for( row = rowIni; row >= rowFin; row-- ) {
 				rowCurrent = row * colIni;
 
-				for( col = colIni; col >= colFin; col -= 4 ) {
+				for( col = colIni; col > colFin; col -= 4 ) {
 					isBreak = funcBack.apply({
-						red:   getAndSetForPixel([ rowCurrent + col-3 ]),
-						green: getAndSetForPixel([ rowCurrent + col-2 ]),
-						blue:  getAndSetForPixel([ rowCurrent + col-1 ]),
-						alpha: getAndSetForPixel([ rowCurrent + col ])
+						red:   getAndSetForPixel([ rowCurrent - col-3 ]),
+						green: getAndSetForPixel([ rowCurrent - col-2 ]),
+						blue:  getAndSetForPixel([ rowCurrent - col-1 ]),
+						alpha: getAndSetForPixel([ rowCurrent - col ])
 					}, [row, col] );
 
 					if ( isBreak == "break" ) {
