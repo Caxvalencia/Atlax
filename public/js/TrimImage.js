@@ -110,6 +110,14 @@ window.ImageUtils = (function( window, $, undefined ) {
 	}
 
 	/**
+	 * @description - Elimina pixeles innecesarios para el borde inferior de la imagen
+	 * @return {image object}
+	 */
+	function trimLeft() {
+		return getImage( _trimLeft( getImageData( this.image ) ) );
+	}
+
+	/**
 	 * METODOS PRIVADOS
 	 *
 	 * _trim( imageData )
@@ -132,13 +140,13 @@ window.ImageUtils = (function( window, $, undefined ) {
 		var trimmedImage = _trimTop( imageData );
 			trimmedImage = _trimBottom( trimmedImage );
 		// trimmedImage = _trimRight( trimmedImage );
-		// trimmedImage = _trimLeft( trimmedImage );
+			trimmedImage = _trimLeft( trimmedImage );
 
 		return trimmedImage;
 	}
 
 	/**
-	 * @description - Devuelve un array de datos de la imagen 
+	 * @description - Devuelve un array de datos de la imagen
 	 *
 	 * @param {imageData} imageData - Matriz de datos de la imagen
 	 * @return {imageData object}
@@ -161,12 +169,36 @@ window.ImageUtils = (function( window, $, undefined ) {
 	}
 
 	/**
-	 * @description - Devuelve un array de datos de la imagen 
+	 * @description - Devuelve un array de datos de la imagen
 	 *
 	 * @param {imageData} imageData - Matriz de datos de la imagen
 	 * @return {imageData object}
 	 */
 	function _trimBottom( imageData ) {
+		var row = 0,
+			len_col = imageData.width * 4,
+			len_row = imageData.height;
+
+		readImageData( "bottom", imageData, function( r, c ) {
+			if( this.alpha() != 0 ) {
+				row = r+1;
+
+				return "break";
+			}
+
+			this.alpha( 255 );
+		});
+
+		return cutImageData( imageData, 0, 0, row, len_col );
+	}
+
+	/**
+	 * @description - Devuelve un array de datos de la imagen
+	 *
+	 * @param {imageData} imageData - Matriz de datos de la imagen
+	 * @return {imageData object}
+	 */
+	function _trimLeft( imageData ) {
 		var row = 0,
 			len_col = imageData.width * 4,
 			len_row = imageData.height;
