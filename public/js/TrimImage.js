@@ -172,12 +172,6 @@ window.ImageUtils = (function( window, $, undefined ) {
 			len_row = imageData.height;
 
 		readImageData( "bottom", imageData, function( r, c ) {
-			this.red( 255 );
-			this.green( 0 );
-			this.blue( 0 );
-			
-			console.log( this.alpha(), r,c );
-
 			if( this.alpha() != 0 ) {
 				row = r+1;
 
@@ -186,8 +180,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 			this.alpha( 255 );
 		});
-		// return cutImageData( imageData, row, 0, len_row, len_col );
-		return cutImageData( imageData, 0, 0, len_row, len_col );
+		return cutImageData( imageData, 0, 0, row, len_col );
 	}
 
 	function cutImageData( imageData, rowIni, colIni, rowFin, colFin ) {
