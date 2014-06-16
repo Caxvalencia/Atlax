@@ -1,4 +1,4 @@
-window.ImageUtils = (function( window, $, undefined ) {
+window.TrimImage = (function( window, $, undefined ) {
 	/**
 	 * @description - Crea un objeto para manipular la imagen pasada por el parametro
 	 * @constructor
@@ -6,7 +6,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 	 * @param {image object} image - Imagen a procesar
 	 * @param {function} funcLoadBack - Función back para el load de la imagen
 	 */
-	var ImageUtils = function( image, funcLoadBack ) {
+	var TrimImage = function( image, funcLoadBack ) {
 		this.image = configureImage( image, funcLoadBack );
 		this.trim = trim;
 		this.trimTop = trimTop;
@@ -168,7 +168,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 		readImageData( "top", imageData, function( r, c ) {
 			if( this.alpha() != 0 ) {
-				row = r-1;
+				row = r;
 				return "break";
 			}
 		});
@@ -188,7 +188,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 		readImageData( "bottom", imageData, function( r, c ) {
 			if( this.alpha() != 0 ) {
-				row = r+1;
+				row = r;
 
 				return "break";
 			}
@@ -230,14 +230,22 @@ window.ImageUtils = (function( window, $, undefined ) {
 			len_row = imageData.height;
 
 		readImageData( "right", imageData, function( r, c ) {
+			console.log( r, c, this.alpha() );
+
 			if( this.alpha() != 0 ) {
-				col = c * 4 - 4;
+				col = c;
 
 				return "break";
 			}
+
+			this.red( 0 );
+			this.green( 0 );
+			this.blue( 255 );
+			this.alpha( 255 );
 		});
 
 		return cutImageData( imageData, 0, 0, len_row, col );
+		// return cutImageData( imageData, 0, 0, len_row, imageData.width * 4 );
 	}
 
 	function cutImageData( imageData, rowIni, colIni, rowFin, colFin ) {
@@ -302,10 +310,10 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 				for( col = colIni; col < colFin; col += interator.col ) {
 					isBreak = funcBack.apply({
-						red:   getAndSetForPixel([ rowCurrent + col ]),
-						green: getAndSetForPixel([ rowCurrent + col+1 ]),
-						blue:  getAndSetForPixel([ rowCurrent + col+2 ]),
-						alpha: getAndSetForPixel([ rowCurrent + col+3 ])
+						red:   getAndSetForPixel( rowCurrent + col ),
+						green: getAndSetForPixel( rowCurrent + col+1 ),
+						blue:  getAndSetForPixel( rowCurrent + col+2 ),
+						alpha: getAndSetForPixel( rowCurrent + col+3 )
 					}, [row, col] );
 
 					if ( isBreak == "break" ) {
@@ -327,10 +335,10 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 				for( col = colIni; col > colFin; col -= 4 ) {
 					isBreak = funcBack.apply({
-						red:   getAndSetForPixel([ rowCurrent - col-3 ]),
-						green: getAndSetForPixel([ rowCurrent - col-2 ]),
-						blue:  getAndSetForPixel([ rowCurrent - col-1 ]),
-						alpha: getAndSetForPixel([ rowCurrent - col ])
+						red:   getAndSetForPixel( rowCurrent - col ),
+						green: getAndSetForPixel( rowCurrent - col-3 ),
+						blue:  getAndSetForPixel( rowCurrent - col-2 ),
+						alpha: getAndSetForPixel( rowCurrent - col-1 )
 					}, [row, col] );
 
 					if ( isBreak == "break" ) {
@@ -352,10 +360,10 @@ window.ImageUtils = (function( window, $, undefined ) {
 					rowCurrent = row * colFin;
 
 					isBreak = funcBack.apply({
-						red:   getAndSetForPixel([ rowCurrent + col ]),
-						green: getAndSetForPixel([ rowCurrent + col+1 ]),
-						blue:  getAndSetForPixel([ rowCurrent + col+2 ]),
-						alpha: getAndSetForPixel([ rowCurrent + col+3 ])
+						red:   getAndSetForPixel( rowCurrent + col ),
+						green: getAndSetForPixel( rowCurrent + col+1 ),
+						blue:  getAndSetForPixel( rowCurrent + col+2 ),
+						alpha: getAndSetForPixel( rowCurrent + col+3 )
 					}, [row, col] );
 
 					if ( isBreak == "break" ) {
@@ -367,9 +375,9 @@ window.ImageUtils = (function( window, $, undefined ) {
 				}
 			}
 		} else if( typeReader === "RIGHT" ) {
-			var rowIni = len_col,
+			var rowIni = len_row,
 				rowFin = 0,
-				colIni = len_row,
+				colIni = len_col,
 				colFin = 0;
 
 			for( col = colIni; col > colFin; col -= 4 ) {
@@ -377,10 +385,10 @@ window.ImageUtils = (function( window, $, undefined ) {
 					rowCurrent = row * colIni;
 
 					isBreak = funcBack.apply({
-						red:   getAndSetForPixel([ rowCurrent - col-3 ]),
-						green: getAndSetForPixel([ rowCurrent - col-2 ]),
-						blue:  getAndSetForPixel([ rowCurrent - col-1 ]),
-						alpha: getAndSetForPixel([ rowCurrent - col ])
+						red:   getAndSetForPixel( rowCurrent - col ),
+						green: getAndSetForPixel( rowCurrent - col-3 ),
+						blue:  getAndSetForPixel( rowCurrent - col-2 ),
+						alpha: getAndSetForPixel( rowCurrent - col-1 )
 					}, [row, col] );
 
 					if ( isBreak == "break" ) {
@@ -412,8 +420,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 	/**
 	 * test
 	 */
-	var imagenObject = ImageUtils( "img/ico-save.png" );
-	var imagen = ImageUtils( "img/ico-save.png" ).image;
+	var imagen = new TrimImage( "img/ico-save.png" ).image;
 	imagen.onload = function() {
 		var cax = getImageData( imagen );
 		var imagen2 = getImage( readImageData( "top", cax, function( row, col ) {
@@ -432,9 +439,16 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 			document.body.appendChild( imagen );
 			document.body.appendChild( imagen2 );
-			document.body.appendChild( imagenObject.trim() );
+			
+			var imagenObject = new TrimImage( "img/ico-trim.png", function() {
+				document.body.appendChild( imagenObject.trim() );
+			});
+
+			var imagenObject2 = new TrimImage( "img/ico-save.png", function() {
+				document.body.appendChild( imagenObject2.trim() );
+			});
 		}
 	};
 
-	return ImageUtils;
+	return TrimImage;
 })( window, Utils.Mix );
