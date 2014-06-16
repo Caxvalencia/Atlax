@@ -11,8 +11,8 @@ window.ImageUtils = (function( window, $, undefined ) {
 		this.trim = trim;
 		this.trimTop = trimTop;
 		this.trimBottom = trimBottom;
-		// this.trimRight = trimRight;
-		// this.trimLeft = trimLeft;
+		this.trimLeft = trimLeft;
+		this.trimRight = trimRight;
 
 		return this;
 	}
@@ -110,11 +110,19 @@ window.ImageUtils = (function( window, $, undefined ) {
 	}
 
 	/**
-	 * @description - Elimina pixeles innecesarios para el borde inferior de la imagen
+	 * @description - Elimina pixeles innecesarios para el borde izquierdo de la imagen
 	 * @return {image object}
 	 */
 	function trimLeft() {
 		return getImage( _trimLeft( getImageData( this.image ) ) );
+	}
+
+	/**
+	 * @description - Elimina pixeles innecesarios para el borde derecho de la imagen
+	 * @return {image object}
+	 */
+	function trimRight() {
+		return getImage( _trimRight( getImageData( this.image ) ) );
 	}
 
 	/**
@@ -139,8 +147,8 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 		var trimmedImage = _trimTop( imageData );
 			trimmedImage = _trimBottom( trimmedImage );
-		// trimmedImage = _trimRight( trimmedImage );
 			trimmedImage = _trimLeft( trimmedImage );
+			trimmedImage = _trimRight( trimmedImage );
 
 		return trimmedImage;
 	}
@@ -176,8 +184,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 	 */
 	function _trimBottom( imageData ) {
 		var row = 0,
-			len_col = imageData.width * 4,
-			len_row = imageData.height;
+			len_col = imageData.width * 4;
 
 		readImageData( "bottom", imageData, function( r, c ) {
 			if( this.alpha() != 0 ) {
@@ -185,8 +192,6 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 				return "break";
 			}
-
-			this.alpha( 255 );
 		});
 
 		return cutImageData( imageData, 0, 0, row, len_col );
@@ -199,39 +204,63 @@ window.ImageUtils = (function( window, $, undefined ) {
 	 * @return {imageData object}
 	 */
 	function _trimLeft( imageData ) {
-		var row = 0,
+		var col = 0,
 			len_col = imageData.width * 4,
 			len_row = imageData.height;
 
-		readImageData( "bottom", imageData, function( r, c ) {
+		readImageData( "left", imageData, function( r, c ) {
 			if( this.alpha() != 0 ) {
-				row = r+1;
+				col = c;
 
 				return "break";
 			}
-
-			this.alpha( 255 );
 		});
-		return cutImageData( imageData, 0, 0, row, len_col );
+
+		return cutImageData( imageData, 0, col, len_row, len_col );
+	}
+
+	/**
+	 * @description - Devuelve un array de datos de la imagen
+	 *
+	 * @param {imageData} imageData - Matriz de datos de la imagen
+	 * @return {imageData object}
+	 */
+	function _trimRight( imageData ) {
+		var col = 0,
+			len_row = imageData.height;
+
+		readImageData( "right", imageData, function( r, c ) {
+			if( this.alpha() != 0 ) {
+				col = c * 4 - 4;
+
+				return "break";
+			}
+		});
+
+		return cutImageData( imageData, 0, 0, len_row, col );
 	}
 
 	function cutImageData( imageData, rowIni, colIni, rowFin, colFin ) {
 		validateImageData( imageData );
 
 		var pixels = imageData.data,
+			len_col = imageData.width * 4,
 			row, col, rowCurrent;
 
 		rowFin = rowFin == 0 ? 1 : rowFin;
 		colFin = colFin == 0 ? 1 : colFin;
 
-		var copyHeight = rowFin == rowIni ? 1 : rowFin-rowIni;
+		var copyHeight = rowFin == rowIni ? 1 : rowFin-rowIni,
+			copyWidth = colFin / 4 - colIni / 4;
 
-		var context = $.createCanvasBack( colFin / 4, copyHeight ).context,
-			copyImageData = context.createImageData( colFin / 4, copyHeight );
+		var context = $.createCanvasBack( copyWidth, copyHeight ).context,
+			copyImageData = context.createImageData( copyWidth, copyHeight );
+
+		var diffCol = len_col - colFin;
 
 		var countCopy = 0
 		for( row = rowIni; row < rowFin; row++ ) {
-			rowCurrent = row * colFin;
+			rowCurrent = row * colFin + row * diffCol;
 
 			for( col = colIni; col < colFin; col += 4, countCopy += 4 ) {
 				copyImageData.data[ countCopy ]   = pixels[ rowCurrent + col ];
@@ -247,6 +276,8 @@ window.ImageUtils = (function( window, $, undefined ) {
 	function readImageData( typeReader, imageData, funcBack ) {
 		validateImageData( imageData );
 
+		typeReader = typeReader.toUpperCase();
+
 		var pixels = imageData.data,
 			row, col, rowCurrent = -1;
 
@@ -255,7 +286,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 
 		var isBreak = false;
 
-		if( typeReader.toUpperCase() === "TOP" ) {
+		if( typeReader === "TOP" ) {
 			var rowIni = 0,
 				rowFin = len_row,
 				colIni = 0,
@@ -285,7 +316,7 @@ window.ImageUtils = (function( window, $, undefined ) {
 					break;
 				}
 			}
-		} else if( typeReader.toUpperCase() === "BOTTOM" ) {
+		} else if( typeReader === "BOTTOM" ) {
 			var rowIni = len_row,
 				rowFin = 0,
 				colIni = len_col,
@@ -295,6 +326,56 @@ window.ImageUtils = (function( window, $, undefined ) {
 				rowCurrent = row * colIni;
 
 				for( col = colIni; col > colFin; col -= 4 ) {
+					isBreak = funcBack.apply({
+						red:   getAndSetForPixel([ rowCurrent - col-3 ]),
+						green: getAndSetForPixel([ rowCurrent - col-2 ]),
+						blue:  getAndSetForPixel([ rowCurrent - col-1 ]),
+						alpha: getAndSetForPixel([ rowCurrent - col ])
+					}, [row, col] );
+
+					if ( isBreak == "break" ) {
+						break;
+					}
+				}
+				if ( isBreak == "break" ) {
+					break;
+				}
+			}
+		} else if( typeReader === "LEFT" ) {
+			var rowIni = 0,
+				rowFin = len_row,
+				colIni = 0,
+				colFin = len_col;
+
+			for( col = colIni; col < colFin; col += 4 ) {
+				for( row = rowIni; row < rowFin; row++ ) {
+					rowCurrent = row * colFin;
+
+					isBreak = funcBack.apply({
+						red:   getAndSetForPixel([ rowCurrent + col ]),
+						green: getAndSetForPixel([ rowCurrent + col+1 ]),
+						blue:  getAndSetForPixel([ rowCurrent + col+2 ]),
+						alpha: getAndSetForPixel([ rowCurrent + col+3 ])
+					}, [row, col] );
+
+					if ( isBreak == "break" ) {
+						break;
+					}
+				}
+				if ( isBreak == "break" ) {
+					break;
+				}
+			}
+		} else if( typeReader === "RIGHT" ) {
+			var rowIni = len_col,
+				rowFin = 0,
+				colIni = len_row,
+				colFin = 0;
+
+			for( col = colIni; col > colFin; col -= 4 ) {
+				for( row = rowIni; row >= rowFin; row-- ) {
+					rowCurrent = row * colIni;
+
 					isBreak = funcBack.apply({
 						red:   getAndSetForPixel([ rowCurrent - col-3 ]),
 						green: getAndSetForPixel([ rowCurrent - col-2 ]),
