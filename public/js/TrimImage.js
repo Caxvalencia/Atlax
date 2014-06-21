@@ -98,6 +98,7 @@ window.TrimImage = (function( window, $, undefined ) {
 	 * @return {image object}
 	 */
 	function trimTop() {
+		// this.image = trimTop
 		return getImage( _trimTop( getImageData( this.image ) ) );
 	}
 
@@ -160,8 +161,6 @@ window.TrimImage = (function( window, $, undefined ) {
 	 * @return {imageData object}
 	 */
 	function _trimTop( imageData ) {
-		validateImageData( imageData );
-
 		var row = 0,
 			len_col = imageData.width * 4,
 			len_row = imageData.height;
@@ -183,18 +182,18 @@ window.TrimImage = (function( window, $, undefined ) {
 	 * @return {imageData object}
 	 */
 	function _trimBottom( imageData ) {
-		var row = 0,
+		var len_row = imageData.height,
 			len_col = imageData.width * 4;
 
 		readImageData( "bottom", imageData, function( r, c ) {
 			if( this.alpha() != 0 ) {
-				row = r;
+				len_row = r;
 
 				return "break";
 			}
 		});
 
-		return cutImageData( imageData, 0, 0, row, len_col );
+		return cutImageData( imageData, 0, 0, len_row, len_col );
 	}
 
 	/**
@@ -226,26 +225,18 @@ window.TrimImage = (function( window, $, undefined ) {
 	 * @return {imageData object}
 	 */
 	function _trimRight( imageData ) {
-		var col = 0,
+		var len_col = imageData.width * 4,
 			len_row = imageData.height;
 
 		readImageData( "right", imageData, function( r, c ) {
-			console.log( r, c, this.alpha() );
-
 			if( this.alpha() != 0 ) {
-				col = c;
+				len_col = c;
 
 				return "break";
 			}
-
-			this.red( 0 );
-			this.green( 0 );
-			this.blue( 255 );
-			this.alpha( 255 );
 		});
 
-		return cutImageData( imageData, 0, 0, len_row, col );
-		// return cutImageData( imageData, 0, 0, len_row, imageData.width * 4 );
+		return cutImageData( imageData, 0, 0, len_row, len_col );
 	}
 
 	function cutImageData( imageData, rowIni, colIni, rowFin, colFin ) {
@@ -375,20 +366,20 @@ window.TrimImage = (function( window, $, undefined ) {
 				}
 			}
 		} else if( typeReader === "RIGHT" ) {
-			var rowIni = len_row,
-				rowFin = 0,
+			var rowIni = len_row - 1,
+				rowFin = 1,
 				colIni = len_col,
 				colFin = 0;
 
 			for( col = colIni; col > colFin; col -= 4 ) {
-				for( row = rowIni; row >= rowFin; row-- ) {
-					rowCurrent = row * colIni;
+				for( row = rowIni; row > rowFin; row-- ) {
+					rowCurrent = row * colIni - 4 + col;
 
 					isBreak = funcBack.apply({
-						red:   getAndSetForPixel( rowCurrent - col ),
-						green: getAndSetForPixel( rowCurrent - col-3 ),
-						blue:  getAndSetForPixel( rowCurrent - col-2 ),
-						alpha: getAndSetForPixel( rowCurrent - col-1 )
+						red:   getAndSetForPixel( rowCurrent - 3 ),
+						green: getAndSetForPixel( rowCurrent - 2 ),
+						blue:  getAndSetForPixel( rowCurrent - 1 ),
+						alpha: getAndSetForPixel( rowCurrent )
 					}, [row, col] );
 
 					if ( isBreak == "break" ) {
