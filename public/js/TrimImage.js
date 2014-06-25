@@ -7,7 +7,7 @@ window.TrimImage = (function( window, $, undefined ) {
 	 * @param {function} funcLoadBack - Función back para el load de la imagen
 	 */
 	var TrimImage = function( image, funcLoadBack ) {
-		this.image = configureImage( image, funcLoadBack );
+		this.image = configureImage( this, image, funcLoadBack );
 		this.trim = trim;
 		this.trimTop = trimTop;
 		this.trimBottom = trimBottom;
@@ -31,7 +31,11 @@ window.TrimImage = (function( window, $, undefined ) {
 		getImageData: getImageData
 	});
 
-	function configureImage( image, funcBack ) {
+	function configureImage( _self, image, funcLoadBack ) {
+		var funcBack = function() {
+			funcLoadBack.call( this, _self );
+		};
+
 		if( $.isString( image ) ) {
 			return $.createImage( image, funcBack );
 		}
@@ -91,11 +95,11 @@ window.TrimImage = (function( window, $, undefined ) {
 	/**
 	 * METODOS PUBLICOS
 	 *
-	 * trim()
-	 * trimTop()
-	 * trimBottom()
-	 * trimLeft()
-	 * trimRight()
+	 * trim( [image] )
+	 * trimTop( [image] )
+	 * trimBottom( [image] )
+	 * trimLeft( [image] )
+	 * trimRight( [image] )
 	 *
 	 */
 
@@ -469,7 +473,7 @@ window.TrimImage = (function( window, $, undefined ) {
 				this.green( 0 );
 				this.blue( 0 );
 				this.alpha( 255 );
-				if( row > 20 ) return "break"
+				if( row >= 19 ) return "break"
 			}
 		}) );
 
@@ -480,12 +484,13 @@ window.TrimImage = (function( window, $, undefined ) {
 			document.body.appendChild( imagen );
 			document.body.appendChild( imagen2 );
 			
-			var imagenObject = new TrimImage( "img/ico-trim.png", function() {
-				document.body.appendChild( imagenObject.trim().image );
+			var imgObject = new TrimImage( "img/ico-trim.png", function() {
+				document.body.appendChild( imgObject.trim().image );
 			});
 
-			var imagenObject2 = new TrimImage( "img/ico-save.png", function() {
-				document.body.appendChild( imagenObject2.trimTop().trimRight().image );
+			new TrimImage( "img/ico-save.png", function( trimImage ) {
+				console.log( this, trimImage );
+				document.body.appendChild( trimImage.trimTop().trimRight().image );
 			});
 		}
 	};
