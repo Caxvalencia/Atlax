@@ -17,6 +17,20 @@ window.TrimImage = (function( window, $, undefined ) {
 		return this;
 	}
 
+	/*
+	 * @abstract
+	 */
+	$.extend( TrimImage, {
+		trim: trim,
+		trimTop: trimTop,
+		trimBottom: trimBottom,
+		trimLeft: trimLeft,
+		trimRight: trimRight,
+		cutImageData: cutImageData,
+		getImage: getImage,
+		getImageData: getImageData
+	});
+
 	function configureImage( image, funcBack ) {
 		if( $.isString( image ) ) {
 			return $.createImage( image, funcBack );
@@ -86,44 +100,77 @@ window.TrimImage = (function( window, $, undefined ) {
 	 */
 
 	/**
-	 * @description - Elimina pixeles innecesarios para los bordes de la imagen
-	 * @return {image object}
+	 * @description - Elimina pixeles innecesarios para todos los bordes de la imagen
+	 * @param [image object] image - Parametro opcional tipo Image
+	 * @return [image object, this] - Retorna this si el parametro es indefinido
 	 */
-	function trim() {
-		return getImage( _trim( getImageData( this.image ) ) );
+	function trim( image ) {
+		if( image !== undefined ) {
+			return getImage( _trim( getImageData( image ) ) );
+		}
+
+		this.image = getImage( _trim( getImageData( this.image ) ) );
+		return this;
 	}
 
 	/**
 	 * @description - Elimina pixeles innecesarios para el borde superior de la imagen
-	 * @return {image object}
+	 * @param [image object] image - Parametro opcional tipo Image
+	 * @return [image object, this] - Retorna this si el parametro es indefinido
 	 */
-	function trimTop() {
-		// this.image = trimTop
-		return getImage( _trimTop( getImageData( this.image ) ) );
+	function trimTop( image ) {
+		if( image !== undefined ) {
+			return getImage( _trimTop( getImageData( image ) ) );
+		}
+
+		this.image = getImage( _trimTop( getImageData( this.image ) ) );
+		return this;
 	}
 
 	/**
 	 * @description - Elimina pixeles innecesarios para el borde inferior de la imagen
-	 * @return {image object}
+	 * @param [image object] image - Parametro opcional tipo Image
+	 * @return [image object, this] - Retorna this si el parametro es indefinido
 	 */
-	function trimBottom() {
-		return getImage( _trimBottom( getImageData( this.image ) ) );
+	function trimBottom( image ) {
+		var trimmed = getImage( _trimBottom( getImageData( this.image ) ) );
+
+		if( image !== undefined ) {
+			return trimmed;
+		}
+
+		this.image = trimmed;
+		return this;
 	}
 
 	/**
 	 * @description - Elimina pixeles innecesarios para el borde izquierdo de la imagen
-	 * @return {image object}
+	 * @param [image object] image - Parametro opcional tipo Image
+	 * @return [image object, this] - Retorna this si el parametro es indefinido
 	 */
-	function trimLeft() {
-		return getImage( _trimLeft( getImageData( this.image ) ) );
+	function trimLeft( image ) {
+		var trimmed = getImage( _trimLeft( getImageData( this.image ) ) );
+
+		if( image !== undefined ) {
+			return trimmed;
+		}
+
+		this.image = trimmed;
+		return this;
 	}
 
 	/**
 	 * @description - Elimina pixeles innecesarios para el borde derecho de la imagen
-	 * @return {image object}
+	 * @param [image object] image - Parametro opcional tipo Image
+	 * @return [image object, this] - Retorna this si el parametro es indefinido
 	 */
-	function trimRight() {
-		return getImage( _trimRight( getImageData( this.image ) ) );
+	function trimRight( image ) {
+		if( image !== undefined ) {
+			return getImage( _trimRight( getImageData( image ) ) );
+		}
+
+		this.image = getImage( _trimRight( getImageData( this.image ) ) );
+		return this;
 	}
 
 	/**
@@ -252,8 +299,10 @@ window.TrimImage = (function( window, $, undefined ) {
 		var copyHeight = rowFin == rowIni ? 1 : rowFin-rowIni,
 			copyWidth = colFin / 4 - colIni / 4;
 
-		var context = $.createCanvasBack( copyWidth, copyHeight ).context,
-			copyImageData = context.createImageData( copyWidth, copyHeight );
+		var copyImageData = [];
+		$.createCanvasBack( copyWidth, copyHeight, function( ctx ) {
+			copyImageData = ctx.createImageData( copyWidth, copyHeight );
+		});
 
 		var diffCol = len_col - colFin;
 
@@ -432,11 +481,11 @@ window.TrimImage = (function( window, $, undefined ) {
 			document.body.appendChild( imagen2 );
 			
 			var imagenObject = new TrimImage( "img/ico-trim.png", function() {
-				document.body.appendChild( imagenObject.trim() );
+				document.body.appendChild( imagenObject.trim().image );
 			});
 
 			var imagenObject2 = new TrimImage( "img/ico-save.png", function() {
-				document.body.appendChild( imagenObject2.trim() );
+				document.body.appendChild( imagenObject2.trimTop().trimRight().image );
 			});
 		}
 	};

@@ -114,7 +114,7 @@
 			};
 
 			if( funcBack ) {
-				funcBack.apply( scoper, arguments );
+				funcBack.apply( scoper, [ contextDum, canvasDum ]);
 			}
 
 			return scoper;
