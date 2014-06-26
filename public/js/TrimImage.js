@@ -1,4 +1,4 @@
-window.TrimImage = (function( window, $, undefined ) {
+!function( window, $, undefined ) {
 	/**
 	 * @description - Crea un objeto para manipular la imagen pasada por el parametro
 	 * @constructor
@@ -7,12 +7,13 @@ window.TrimImage = (function( window, $, undefined ) {
 	 * @param {function} funcLoadBack - Función back para el load de la imagen
 	 */
 	var TrimImage = function( image, funcLoadBack ) {
-		this.image = configureImage( this, image, funcLoadBack );
 		this.trim = trim;
 		this.trimTop = trimTop;
 		this.trimBottom = trimBottom;
 		this.trimLeft = trimLeft;
 		this.trimRight = trimRight;
+		
+		configureImage( this, image, funcLoadBack );
 
 		return this;
 	}
@@ -31,19 +32,34 @@ window.TrimImage = (function( window, $, undefined ) {
 		getImageData: getImageData
 	});
 
+	/**
+	 * @description - Configura el parametro de entrada "image" del constructor
+	 *
+	 * @param {TrimImage} _self - Objeto padre
+	 * @param {[image object, String]} image - Imagen a tratar
+	 * @param {Function} funcLoadBack - Funcion callback
+	 *
+	 * @return {imageData object}
+	 */
 	function configureImage( _self, image, funcLoadBack ) {
-		var funcBack = function() {
-			funcLoadBack.call( this, _self );
-		};
-
 		if( $.isString( image ) ) {
-			return $.createImage( image, funcBack );
+			if( funcLoadBack === undefined ) {
+				_self.image = $.createImage( image );
+				return;
+			}
+
+			$.createImage( image, function() {
+				_self.image = this;
+				funcLoadBack.call( this, _self );
+			});
+			
+			return;
 		}
 
-		if( funcBack )
-			image.onload = funcBack;
-
-		return image;
+		_self.image = image;
+		//La imagen en este punto ya esta cargada
+		//Llamamos el callBack
+		funcLoadBack.call( image, _self );
 	}
 
 	/**
@@ -137,13 +153,11 @@ window.TrimImage = (function( window, $, undefined ) {
 	 * @return [image object, this] - Retorna this si el parametro es indefinido
 	 */
 	function trimBottom( image ) {
-		var trimmed = getImage( _trimBottom( getImageData( this.image ) ) );
-
 		if( image !== undefined ) {
-			return trimmed;
+			return getImage( _trimBottom( getImageData( image ) ) );
 		}
 
-		this.image = trimmed;
+		this.image = getImage( _trimBottom( getImageData( this.image ) ) );
 		return this;
 	}
 
@@ -153,13 +167,11 @@ window.TrimImage = (function( window, $, undefined ) {
 	 * @return [image object, this] - Retorna this si el parametro es indefinido
 	 */
 	function trimLeft( image ) {
-		var trimmed = getImage( _trimLeft( getImageData( this.image ) ) );
-
 		if( image !== undefined ) {
-			return trimmed;
+			return getImage( _trimLeft( getImageData( image ) ) );
 		}
 
-		this.image = trimmed;
+		this.image = getImage( _trimLeft( getImageData( this.image ) ) );
 		return this;
 	}
 
@@ -461,39 +473,5 @@ window.TrimImage = (function( window, $, undefined ) {
 			throw "ImageData Exception: No es compatible el tipo de dato";
 	}
 
-	/**
-	 * test
-	 */
-	var imagen = new TrimImage( "img/ico-save.png" ).image;
-	imagen.onload = function() {
-		var cax = getImageData( imagen );
-		var imagen2 = getImage( readImageData( "top", cax, function( row, col ) {
-			if( this.alpha() == 0 ) {
-				this.red( 255 );
-				this.green( 0 );
-				this.blue( 0 );
-				this.alpha( 255 );
-				if( row >= 19 ) return "break"
-			}
-		}) );
-
-		imagen2.onload = function() {
-			var imageData2 = getImageData( imagen2 );
-			imagen2 = getImage( cutImageData( imageData2, 10, 0, imagen2.height/2, imageData2.width * 4 ) );
-
-			document.body.appendChild( imagen );
-			document.body.appendChild( imagen2 );
-			
-			var imgObject = new TrimImage( "img/ico-trim.png", function() {
-				document.body.appendChild( imgObject.trim().image );
-			});
-
-			new TrimImage( "img/ico-save.png", function( trimImage ) {
-				console.log( this, trimImage );
-				document.body.appendChild( trimImage.trimTop().trimRight().image );
-			});
-		}
-	};
-
-	return TrimImage;
-})( window, Utils.Mix );
+	window.TrimImage = TrimImage;
+}( window, Utils.Mix );
