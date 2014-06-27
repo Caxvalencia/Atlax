@@ -1,9 +1,9 @@
-!function( window, undefined ) {
+!function( window, exports, require, undefined ) {
 	if( !window.File || !window.FileReader || !window.FileList || !window.Blob ) {
 		throw "Exception: No se encontro API Files";
 	}
 
-	var $ = Utils.Mix; //Encapsula la libreria de utilidades Utils.js
+	var $ = require( "Utils" ); //Encapsula la libreria de utilidades Utils.js
 
 	window.Atlax = (function() {
 		var contructor = function( config ) {
@@ -100,4 +100,4 @@
 
 		return contructor;
 	})();
-}( window );
+}( window, module.exports, module.require );

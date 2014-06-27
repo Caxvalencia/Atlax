@@ -1,4 +1,6 @@
-!function( window, $, undefined ) {
+!function( window, exports, require, undefined ) {
+	var $ = require( "Utils" );
+
 	/**
 	 * @description - Crea un objeto para manipular la imagen pasada por el parametro
 	 * @constructor
@@ -473,5 +475,5 @@
 			throw "ImageData Exception: No es compatible el tipo de dato";
 	}
 
-	window.TrimImage = TrimImage;
-}( window, Utils.Mix );
+	exports.TrimImage = TrimImage;
+}( window, module.exports, module.require );

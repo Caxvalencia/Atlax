@@ -1,6 +1,6 @@
-!function( window, Utils, undefined ) {
+!function( window, exports, require, undefined ) {
 	//Imports
-	var $ = Utils.Mix;
+	var $ = require( "DOMUtils" );
 
 	$.ready( "dom", main );
 
@@ -36,4 +36,4 @@
 		}
 		document.getElementById( 'log' ).innerHTML = '<ul>' + output.join('') + '</ul>';
 	}
-}( window, Utils );
+}( window, module.exports, module.require );

@@ -1,7 +1,7 @@
 /**
  * Utils.js Modulo de utilidades para el JavaScript y el DOM API
  */
-!function( window, undefined ) {
+!function( window, exports, require, undefined ) {
 	const isNumber = "number",
 		isString = "string",
 		isObject = "object",
@@ -159,11 +159,11 @@
 	ObjectUtils.extend( mix, ObjectUtils );
 	ObjectUtils.extend( mix, DOMUtils );
 
-	window.Utils = {
+	ObjectUtils.extend( exports, {
+		Utils: mix,
 		StringUtils: StringUtils,
 		ObjectUtils: ObjectUtils,
-		DOMUtils: DOMUtils,
+		DOMUtils: DOMUtils
+	});
 
-		Mix: mix
-	};
-}( window );
+}( window, module.exports, module.require );
