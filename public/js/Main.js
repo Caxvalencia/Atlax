@@ -1,6 +1,7 @@
 !function( window, exports, require, undefined ) {
 	//Imports
 	var $ = require( "DOMUtils" );
+	var Atlax = require( "Atlax" );
 
 	$.ready( "dom", main );
 
