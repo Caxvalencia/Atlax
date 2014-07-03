@@ -23,13 +23,14 @@
 	 * Metodos publicos
 	 */
 	function addImageToAtlax( fileImage, x, y, width, height ) {
-		var _self = this;
+		var _self = this,
+			CacheAtlax = this.CacheAtlax;
 
-		var fileImageChached = this.CacheAtlax.get( fileImage.name );
+		var fileImageChached = CacheAtlax.get( fileImage.name );
 
 		if( fileImageChached !== undefined ) {
 			if( fileImageChached.infoFile.lastModDate < fileImage.lastModifiedDate ) {
-				this.CacheAtlax.set( fileImage.name, {
+				CacheAtlax.set( fileImage.name, {
 					infoFile: {
 						type: fileImage.type,
 						size: fileImage.size,
