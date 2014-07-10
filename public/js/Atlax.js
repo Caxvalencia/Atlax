@@ -9,78 +9,6 @@
 	var $ = require( "Utils" );
 
 	/**
-	 * Metodos privados
-	 */
-	function addImageToCtxCanvas( image, x, y, width, height ) {
-		this.ctx.drawImage( image,
-			x, y,
-			width  || image.width,
-			height || image.height
-		);
-	}
-
-	/**
-	 * Metodos publicos
-	 */
-	function addImageToAtlax( fileImage, x, y, width, height ) {
-		var _self = this,
-			CacheAtlax = this.CacheAtlax;
-
-		var fileImageChached = CacheAtlax.get( fileImage.name );
-
-		if( fileImageChached !== undefined ) {
-			if( fileImageChached.infoFile.lastModDate < fileImage.lastModifiedDate ) {
-				CacheAtlax.set( fileImage.name, {
-					infoFile: {
-						type: fileImage.type,
-						size: fileImage.size,
-						lastModDate: fileImage.lastModifiedDate
-					}
-				});
-			}
-
-			addImageToCtxCanvas.call( _self, fileImageChached.infoCtx.image, x, y, width, height );
-			return;
-		}
-
-		var reader = new FileReader();
-		reader.onload = (function( fileImage, x, y, width, height ) {
-			return function( e ) {
-				var image = $.createImage( e.target.result, function() {
-					addImageToCtxCanvas.call( _self, this, x, y, width, height );
-				});
-
-				_self.CacheAtlax.set( fileImage.name, {
-					infoFile: {
-						type: fileImage.type,
-						size: fileImage.size,
-						lastModDate: fileImage.lastModifiedDate
-					},
-					infoCtx: {
-						image: image,
-						x: x,
-						y: y,
-						width: width,
-						height: height
-					}
-				});
-			};
-		})( fileImage, x, y, width, height );
-		reader.readAsDataURL( fileImage );
-
-		return reader;
-	}
-
-	function getMousePos( event ) {
-		var rect = this.canvas.getBoundingClientRect();
-			
-		return {
-			x: event.clientX - rect.left,
-			y: event.clientY - rect.top
-		};
-	}
-
-	/**
 	 * @Constructor
 	 */
 	function Atlax( config ) {
@@ -112,6 +40,78 @@
 				config.drop.apply( _self, arguments );
 			}, false );
 		}
+	}
+
+	/**
+	 * Metodos privados
+	 */
+	function addImageToCtx( image, x, y, width, height ) {
+		this.ctx.drawImage( image,
+			x, y,
+			width  || image.width,
+			height || image.height
+		);
+	}
+
+	/**
+	 * Metodos publicos
+	 */
+	function addImageToAtlax( fileImage, x, y, width, height ) {
+		var _self = this,
+			CacheAtlax = this.CacheAtlax;
+
+		var fileImageChached = CacheAtlax.get( fileImage.name );
+
+		if( fileImageChached !== undefined ) {
+			if( fileImageChached.infoFile.lastModDate < fileImage.lastModifiedDate ) {
+				CacheAtlax.set( fileImage.name, {
+					infoFile: {
+						type: fileImage.type,
+						size: fileImage.size,
+						lastModDate: fileImage.lastModifiedDate
+					}
+				});
+			}
+
+			addImageToCtx.call( _self, fileImageChached.infoCtx.image, x, y, width, height );
+			return;
+		}
+
+		var reader = new FileReader();
+		reader.onload = (function( fileImage, x, y, width, height ) {
+			return function( e ) {
+				var image = $.createImage( e.target.result, function() {
+					addImageToCtx.call( _self, this, x, y, width, height );
+				});
+
+				_self.CacheAtlax.set( fileImage.name, {
+					infoFile: {
+						type: fileImage.type,
+						size: fileImage.size,
+						lastModDate: fileImage.lastModifiedDate
+					},
+					infoCtx: {
+						image: image,
+						x: x,
+						y: y,
+						width: width,
+						height: height
+					}
+				});
+			};
+		})( fileImage, x, y, width, height );
+		reader.readAsDataURL( fileImage );
+
+		return reader;
+	}
+
+	function getMousePos( event ) {
+		var rect = this.canvas.getBoundingClientRect();
+			
+		return {
+			x: event.clientX - rect.left,
+			y: event.clientY - rect.top
+		};
 	}
 
 	exports.Atlax = Atlax;
