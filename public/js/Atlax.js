@@ -60,10 +60,10 @@
 		var _self = this,
 			CacheAtlax = this.CacheAtlax;
 
-		var fileImageChached = CacheAtlax.get( fileImage.name );
+		var fileImageCached = CacheAtlax.get( fileImage.name );
 
-		if( fileImageChached !== undefined ) {
-			if( fileImageChached.infoFile.lastModDate < fileImage.lastModifiedDate ) {
+		if( fileImageCached !== undefined ) {
+			if( fileImageCached.infoFile.lastModDate < fileImage.lastModifiedDate ) {
 				CacheAtlax.set( fileImage.name, {
 					infoFile: {
 						type: fileImage.type,
@@ -73,7 +73,7 @@
 				});
 			}
 
-			addImageToCtx.call( _self, fileImageChached.infoCtx.image, x, y, width, height );
+			addImageToCtx.call( _self, fileImageCached.infoCtx.image, x, y, width, height );
 			return;
 		}
 
