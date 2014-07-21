@@ -28,8 +28,7 @@
 				continue;
 			}
 
-			var reader = thisAtlax.addImageToAtlax( f, eventX, eventY );
-			
+			thisAtlax.addImageToAtlax( f, eventX, eventY );
 
 			output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
 				f.size, ' bytes, last modified: ',

@@ -69,6 +69,13 @@
 						type: fileImage.type,
 						size: fileImage.size,
 						lastModDate: fileImage.lastModifiedDate
+					},
+					infoCtx: {
+						image: fileImageCached.infoCtx.image,
+						x: x,
+						y: y,
+						width: width  || image.width,
+						height: height || image.height
 					}
 				});
 			}
@@ -84,7 +91,7 @@
 					addImageToCtx.call( _self, this, x, y, width, height );
 				});
 
-				_self.CacheAtlax.set( fileImage.name, {
+				CacheAtlax.set( fileImage.name, {
 					infoFile: {
 						type: fileImage.type,
 						size: fileImage.size,
@@ -94,15 +101,15 @@
 						image: image,
 						x: x,
 						y: y,
-						width: width,
-						height: height
+						width: width  || image.width,
+						height: height || image.height
 					}
 				});
 			};
 		})( fileImage, x, y, width, height );
 		reader.readAsDataURL( fileImage );
 
-		return reader;
+		return _self;
 	}
 
 	function getMousePos( event ) {
