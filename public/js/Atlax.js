@@ -53,6 +53,23 @@
 		);
 	}
 
+	function addImageToCache( fileImage, x, y, width, height ) {
+		CacheAtlax.set( fileImage.name, {
+			infoFile: {
+				type: fileImage.type,
+				size: fileImage.size,
+				lastModDate: fileImage.lastModifiedDate
+			},
+			infoCtx: {
+				image: fileImage.infoCtx.image,
+				x: x,
+				y: y,
+				width: width || image.width,
+				height: height || image.height
+			}
+		});
+	}
+
 	/**
 	 * Metodos publicos
 	 */
@@ -74,7 +91,7 @@
 						image: fileImageCached.infoCtx.image,
 						x: x,
 						y: y,
-						width: width  || image.width,
+						width: width || image.width,
 						height: height || image.height
 					}
 				});
@@ -101,7 +118,7 @@
 						image: image,
 						x: x,
 						y: y,
-						width: width  || image.width,
+						width: width || image.width,
 						height: height || image.height
 					}
 				});
